@@ -1,0 +1,565 @@
+/* ===== KAKUBAKE ver.2 styles.css ===== */
+/* 基準: Raspberry Pi Touch Display 2 / 1280×720 横長 */
+
+/* ============================================================
+   CSS変数 — 背景色はここで管理
+   ============================================================ */
+:root {
+  /* アプリ外側の背景（夜の部屋感） */
+  --app-bg-center:  #1a2238;
+  --app-bg-edge:    #080810;
+
+  /* KAKUBAKE画面内部の背景 */
+  --screen-bg-top:  #07091a;
+  --screen-bg-mid:  #0c1030;
+  --screen-bg-deep: #060710;
+
+  /* 画面の外側グロウ（スクリーンが光っている感） */
+  --screen-glow:    rgba(60, 90, 210, 0.14);
+
+  /* KAKUBAKEデバイス本体の色 */
+  --device-top:     #2d5a8e;
+  --device-bot:     #14294a;
+  --device-rim:     #3672a0;
+
+  --ghost-image-size: 720px;
+  --ghost-fallback-scale: 1.5;
+}
+
+/* ---- リセット & ベース ---- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* html/body はビューポート全体を覆う（1280×720以外のウィンドウサイズでも余白を濃紺で埋める） */
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--app-bg-edge);
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--app-bg-edge);
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* #app は設計基準の 1280×720 を維持 */
+#app {
+  width: 1280px;
+  height: 720px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* ---- 画面エリア（フルスクリーン） ---- */
+#screen {
+  width: 1280px;
+  height: 720px;
+  /*
+   * 背景レイヤー（上から順に）:
+   *   1. bg_screen_effect.png — ライト・雰囲気エフェクト（透明PNG・任意）
+   *   2. bg_screen.png        — 夜の部屋メイン背景（1280×720）
+   *   3. CSS グラデーション    — 画像がない時のフォールバック
+   */
+  background:
+    url('assets/bg_screen_effect.png') center / cover no-repeat,
+    url('assets/bg_screen.png')        center center / cover no-repeat,
+    radial-gradient(ellipse 80% 45% at 50% 100%, rgba(28, 18, 72, 0.75) 0%, transparent 70%),
+    linear-gradient(180deg,
+      var(--screen-bg-top)  0%,
+      var(--screen-bg-mid)  40%,
+      var(--screen-bg-deep) 100%);
+  border-radius: 0;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
+  touch-action: none;
+}
+
+#screen:focus-visible {
+  outline: 2px solid #5b8dd9;
+  outline-offset: 4px;
+}
+
+/* ---- 画面内パーティクル: 星・光の粒（CSSのみ） ---- */
+/* box-shadow で複数の微小な星を配置。ゴーストの後ろに来るよう z-index: 0 */
+#screen::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  /* x y blur color — screen 1280×720 内に散らばる星 */
+  box-shadow:
+     80px  55px 1.5px rgba(220, 235, 255, 0.40),
+    260px 120px 1px   rgba(200, 218, 255, 0.28),
+    480px 200px 2px   rgba(225, 240, 255, 0.22),
+    720px  70px 1px   rgba(215, 230, 255, 0.38),
+    950px 160px 2px   rgba(200, 218, 255, 0.20),
+   1100px  90px 1.5px rgba(230, 244, 255, 0.35),
+   1220px 210px 1px   rgba(210, 228, 255, 0.26),
+    140px 380px 1px   rgba(205, 222, 255, 0.18),
+    400px 480px 1.5px rgba(215, 232, 255, 0.14),
+    680px 550px 1px   rgba(225, 240, 255, 0.16),
+    880px 420px 2px   rgba(205, 220, 255, 0.18),
+   1050px 500px 1px   rgba(215, 230, 255, 0.14),
+    310px 600px 1.5px rgba(200, 216, 255, 0.12),
+    570px  40px 1px   rgba(230, 244, 255, 0.36),
+    820px 300px 1px   rgba(210, 228, 255, 0.22);
+  animation: screen-stars 20s ease-in-out infinite alternate;
+}
+
+/* ---- 画面内グロウパッチ: ほのかな光のたまり ---- */
+#screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle 90px  at 18% 30%, rgba(70,  95, 210, 0.05) 0%, transparent 100%),
+    radial-gradient(circle 120px at 72% 55%, rgba(100, 70, 200, 0.04) 0%, transparent 100%),
+    radial-gradient(circle 70px  at 50% 88%, rgba(55,  85, 195, 0.06) 0%, transparent 100%),
+    radial-gradient(circle 50px  at 88% 15%, rgba(80,  60, 180, 0.04) 0%, transparent 100%);
+  animation: screen-dust 26s ease-in-out infinite alternate;
+}
+
+/* ============================================================
+   ゴーストコンテナ
+   - position制御のみ担当
+   - JS が wander用の translate を inline styleで設定
+   - transition で wander移動を滑らかに
+   ============================================================ */
+#ghost-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* パーティクル(::before/::after z-index:0)より前面に表示 */
+  z-index: 1;
+  /* wanderでの位置移動を滑らかに */
+  transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.55s ease;
+}
+
+/* peek/hide中はJSのtransitionを無効化（アニメが制御する） */
+.state-peeking #ghost-container,
+.state-hiding  #ghost-container {
+  transition: none;
+}
+
+/* ---- peeking: flex alignmentでゴーストを画面端に寄せる ---- */
+.state-peeking.peek-right  #ghost-container { justify-content: flex-end;  align-items: center; }
+.state-peeking.peek-left   #ghost-container { justify-content: flex-start; align-items: center; }
+.state-peeking.peek-top    #ghost-container { justify-content: center;     align-items: flex-start; }
+.state-peeking.peek-bottom #ghost-container { justify-content: center;     align-items: flex-end; }
+
+/* ---- hiding: 端の隅にほぼ隠れる ---- */
+.state-hiding.hide-right  #ghost-container { justify-content: flex-end;  align-items: flex-end; }
+.state-hiding.hide-left   #ghost-container { justify-content: flex-start; align-items: flex-end; }
+.state-hiding.hide-bottom #ghost-container { justify-content: center;     align-items: flex-end; }
+
+/* ---- absent: 消える ---- */
+.state-absent #ghost-container {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.65s ease;
+}
+
+/* absent復帰フェードイン */
+.absent-return #ghost-container {
+  animation: container-fade-in 1s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+}
+
+/* ============================================================
+   ゴースト画像
+   通常: 215px = 画面462pxの約46.5%
+   touched後: bounce animationで約1.26倍 ≒ 58%まで大きく見える
+   ============================================================ */
+#ghost-img {
+  width: var(--ghost-image-size);
+  height: var(--ghost-image-size);
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.38s ease;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+#ghost-img[src=""] {
+  display: none;
+}
+
+/* ============================================================
+   CSSフォールバックゴースト（画像なし時）
+   ============================================================ */
+#ghost-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  transform: scale(var(--ghost-fallback-scale));
+  transform-origin: center;
+}
+
+#ghost-fallback.active {
+  display: flex;
+}
+
+.ghost-body {
+  position: relative;
+  width: 330px;
+  height: 390px;
+  background: radial-gradient(ellipse at 44% 38%, #f6faff 52%, #d4e2f5 100%);
+  border-radius: 117px 117px 44% 44%;
+  box-shadow: 0 9px 54px rgba(80, 135, 220, 0.22);
+  flex-shrink: 0;
+}
+
+/* 口：border-radius で曲線スマイルを表現 */
+.ghost-body::before {
+  content: '';
+  position: absolute;
+  top: 147px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 45px;
+  height: 22px;
+  border-bottom: 3px solid rgba(20, 22, 50, 0.7);
+  border-radius: 0 0 22px 22px;
+}
+
+/* 下部のフリル */
+.ghost-body::after {
+  content: '';
+  position: absolute;
+  bottom: -17px;
+  left: 0;
+  width: 100%;
+  height: 38px;
+  background:
+    radial-gradient(ellipse 28% 65% at 16% 50%, #d4e2f5 42%, transparent 43%),
+    radial-gradient(ellipse 28% 65% at 50% 50%, #d4e2f5 42%, transparent 43%),
+    radial-gradient(ellipse 28% 65% at 84% 50%, #d4e2f5 42%, transparent 43%);
+}
+
+.ghost-eye {
+  position: absolute;
+  width: 27px;
+  height: 30px;
+  background: #1a1a2e;
+  border-radius: 50%;
+  top: 84px;
+}
+
+.ghost-eye::after {
+  content: '';
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  background: white;
+  border-radius: 50%;
+  top: 4px;
+  left: 4px;
+}
+
+.ghost-eye-left  { left: 54px; }
+.ghost-eye-right { right: 54px; }
+
+.ghost-cheek {
+  position: absolute;
+  width: 42px;
+  height: 22px;
+  background: rgba(255, 150, 170, 0.42);
+  border-radius: 50%;
+  top: 123px;
+}
+
+.ghost-cheek-left  { left: 36px; }
+.ghost-cheek-right { right: 36px; }
+
+/* ============================================================
+   本体コントロール（装飾のみ）
+   ============================================================ */
+#device-controls {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+}
+
+.ctrl-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.22);
+  flex-shrink: 0;
+}
+
+.btn-yellow { background: radial-gradient(circle at 35% 35%, #ffe066, #d49b00); }
+.btn-pink   { background: radial-gradient(circle at 35% 35%, #ffb0c8, #de4a72); }
+
+.speaker-grille {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.speaker-grille span {
+  display: block;
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.16);
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.55);
+}
+
+/* ============================================================
+   デバッグバー（開発用・極めて小さく目立たない）
+   本番時は <body class="production"> を付けると非表示になる
+   ============================================================ */
+#debug-bar {
+  position: absolute;
+  bottom: 7px;
+  right: 14px;
+  font-size: 10px;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.13);
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+body.production #debug-bar {
+  display: none;
+}
+
+/* =============================================================
+   状態クラス ― ゴーストのアニメーションはすべて #ghost-img / .ghost-body に適用
+   ============================================================= */
+
+/* ---- idle / wander: ふわふわ浮く ---- */
+.state-idle   #ghost-img,
+.state-idle   .ghost-body,
+.state-wander #ghost-img,
+.state-wander .ghost-body {
+  animation: float 3.4s ease-in-out infinite;
+}
+
+/* ---- sleeping: ゆっくりゆれ・少し暗く ---- */
+.state-sleeping #ghost-container {
+  opacity: 0.80;
+}
+
+.state-sleeping #ghost-img,
+.state-sleeping .ghost-body {
+  animation: bob 5s ease-in-out infinite;
+  filter: brightness(0.82);
+}
+
+/* ---- touched: 画面が光る ---- */
+.state-touched #screen {
+  box-shadow:
+    inset 0 2px 18px rgba(0,0,0,0.98),
+    inset 0 0 0 2px #0b162a,
+    0 0 50px rgba(91, 150, 230, 0.6),
+    0 0 100px rgba(91, 150, 230, 0.18);
+}
+
+/* ゴーストがバウンスで近づく */
+.state-touched #ghost-img,
+.state-touched .ghost-body {
+  animation: bounce-touched 1.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* -------- peeking アニメーション --------
+   ゴーストが端から半分以上を隠して顔だけのぞかせる
+   translateX/Y のパーセントはゴースト自身のサイズ基準
+   ------------------------------------------------------------ */
+
+/* 右からのぞく */
+.state-peeking.peek-right #ghost-img,
+.state-peeking.peek-right .ghost-body {
+  animation:
+    peek-enter-right 0.9s cubic-bezier(0.25, 1.5, 0.5, 1) forwards,
+    peek-breathe-x   2.8s ease-in-out 0.9s infinite;
+}
+
+/* 左からのぞく */
+.state-peeking.peek-left #ghost-img,
+.state-peeking.peek-left .ghost-body {
+  animation:
+    peek-enter-left  0.9s cubic-bezier(0.25, 1.5, 0.5, 1) forwards,
+    peek-breathe-neg-x 2.8s ease-in-out 0.9s infinite;
+}
+
+/* 上からのぞく */
+.state-peeking.peek-top #ghost-img,
+.state-peeking.peek-top .ghost-body {
+  animation:
+    peek-enter-top   0.9s cubic-bezier(0.25, 1.5, 0.5, 1) forwards,
+    peek-breathe-neg-y 2.8s ease-in-out 0.9s infinite;
+}
+
+/* 下からのぞく */
+.state-peeking.peek-bottom #ghost-img,
+.state-peeking.peek-bottom .ghost-body {
+  animation:
+    peek-enter-bottom 0.9s cubic-bezier(0.25, 1.5, 0.5, 1) forwards,
+    peek-breathe-y    2.8s ease-in-out 0.9s infinite;
+}
+
+/* -------- hiding アニメーション --------
+   peek より深く隠れる。わずかな端だけ見える
+   ------------------------------------------------------------ */
+
+.state-hiding.hide-right #ghost-img,
+.state-hiding.hide-right .ghost-body {
+  animation: hide-breathe-right 4s ease-in-out infinite;
+}
+
+.state-hiding.hide-left #ghost-img,
+.state-hiding.hide-left .ghost-body {
+  animation: hide-breathe-left 4s ease-in-out infinite;
+}
+
+.state-hiding.hide-bottom #ghost-img,
+.state-hiding.hide-bottom .ghost-body {
+  animation: hide-breathe-bottom 4s ease-in-out infinite;
+}
+
+/* =============================================================
+   キーフレーム
+   ============================================================= */
+
+/* --- 基本浮き --- */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-16px); }
+}
+
+/* --- 寝て揺れる --- */
+@keyframes bob {
+  0%, 100% { transform: translateY(0px)  rotate(-1.8deg); }
+  50%       { transform: translateY(10px) rotate(1.8deg); }
+}
+
+/* --- タッチでバウンス・大きく近づく（1.25倍まで） --- */
+@keyframes bounce-touched {
+  0%   { transform: scale(1.00); }
+  18%  { transform: scale(1.30); }
+  36%  { transform: scale(1.17); }
+  54%  { transform: scale(1.25); }
+  72%  { transform: scale(1.20); }
+  86%  { transform: scale(1.23); }
+  100% { transform: scale(1.00); }
+}
+
+/* --- absent復帰フェードイン --- */
+@keyframes container-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* --- peek: 右端からのぞく（右に寄ってる状態でtranslateX） ---
+   peek-enter: 画面外(100%)から44%（半分以上が隠れた位置）へ
+   peek-breathe: 44% ↔ 40% で小さく出入り                    */
+@keyframes peek-enter-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(44%); }
+}
+@keyframes peek-breathe-x {
+  0%, 100% { transform: translateX(44%); }
+  45%      { transform: translateX(40%); }
+}
+
+/* --- peek: 左端 --- */
+@keyframes peek-enter-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(-44%); }
+}
+@keyframes peek-breathe-neg-x {
+  0%, 100% { transform: translateX(-44%); }
+  45%      { transform: translateX(-40%); }
+}
+
+/* --- peek: 上端 --- */
+@keyframes peek-enter-top {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(-44%); }
+}
+@keyframes peek-breathe-neg-y {
+  0%, 100% { transform: translateY(-44%); }
+  45%      { transform: translateY(-40%); }
+}
+
+/* --- peek: 下端 --- */
+@keyframes peek-enter-bottom {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(44%); }
+}
+@keyframes peek-breathe-y {
+  0%, 100% { transform: translateY(44%); }
+  45%      { transform: translateY(40%); }
+}
+
+/* --- hide: 右端にほぼ隠れる（peek より深い 65%） --- */
+@keyframes hide-breathe-right {
+  0%, 100% { transform: translateX(66%); }
+  50%       { transform: translateX(64%); }
+}
+@keyframes hide-breathe-left {
+  0%, 100% { transform: translateX(-66%); }
+  50%       { transform: translateX(-64%); }
+}
+@keyframes hide-breathe-bottom {
+  0%, 100% { transform: translateY(66%); }
+  50%       { transform: translateY(64%); }
+}
+
+/* --- 画面内パーティクルアニメーション --- */
+/* 星がゆっくり上下に揺れ、少し輝きが変わる */
+@keyframes screen-stars {
+  0%   { transform: translateY(0px);  opacity: 0.65; }
+  45%  { transform: translateY(-3px); opacity: 1.00; }
+  100% { transform: translateY(2px);  opacity: 0.55; }
+}
+
+/* グロウパッチがほんのり漂う */
+@keyframes screen-dust {
+  0%   { transform: translate(0px,  0px) scale(1.00); opacity: 0.8; }
+  50%  { transform: translate(-4px, -3px) scale(1.06); opacity: 1.0; }
+  100% { transform: translate(3px,   2px) scale(0.94); opacity: 0.7; }
+}
+
+/* =============================================================
+   prefers-reduced-motion
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

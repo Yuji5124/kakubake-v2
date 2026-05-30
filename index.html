@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, initial-scale=1.0">
+  <meta name="description" content="KAKUBAKE ver.2 - 小さな画面の中に住んでいる白いおばけの相棒">
+  <title>KAKUBAKE</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- スクリーン（フルスクリーン表示） -->
+  <div id="screen" role="button" tabindex="0" aria-label="KAKUBAKEの画面">
+
+    <!-- ゴーストコンテナ（位置・アニメ制御） -->
+    <div id="ghost-container">
+      <img id="ghost-img" alt="KAKUBAKE ghost" draggable="false">
+      <div id="ghost-fallback" aria-hidden="true">
+        <div class="ghost-body">
+          <div class="ghost-eye ghost-eye-left"></div>
+          <div class="ghost-eye ghost-eye-right"></div>
+          <div class="ghost-cheek ghost-cheek-left"></div>
+          <div class="ghost-cheek ghost-cheek-right"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- /screen -->
+
+  <!-- 開発用デバッグバー -->
+  <div id="debug-bar" aria-live="polite"></div>
+
+</div>
+<!-- /app -->
+
+<script src="app.js"></script>
+</body>
+</html>
